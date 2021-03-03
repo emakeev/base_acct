@@ -1,0 +1,61 @@
+//
+// Copyright 2021 Author. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+syntax = "proto3";
+
+package protos;
+option go_package = "github.com/emakeev/base_acct/protos";
+
+service accounting {
+    rpc start(session) returns (session_resp);
+    rpc update(update_req) returns (session_resp);
+    rpc stop(update_req) returns (stop_resp);
+}
+
+message QoS {
+    float download_mbps = 1;
+    float upload_mbps = 2;
+    // TBD
+}
+
+message session {
+    oneof user {
+        string IMSI = 1;
+        bytes  certificate_serial_number = 2;
+        bytes  hardware_addr = 3;
+        string name = 4;
+    }
+    string session_id = 5;
+    QoS    available_qos = 6;
+}
+
+message session_resp {
+    message report_limits {
+        uint32 octets_in = 1;
+        uint32 octets_out = 2;
+        uint32 elapsed_time_sec = 3;
+    }
+    report_limits reporting_advisory = 1;
+    QoS           min_acceptable_qos = 2;
+}
+
+message update_req {
+    session session = 1;
+    uint32 octets_in = 2;
+    uint32 octets_out = 3;
+}
+
+message stop_resp {
+}
