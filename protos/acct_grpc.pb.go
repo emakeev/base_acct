@@ -18,8 +18,22 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AccountingClient interface {
+	// start will be called at the end of every new user session creation
+	// start is responsible for verification & initiation of a smart contract
+	// between the user identity provider/MNO and service provider (ISP/WISP/PLTE)
+	// A non-error return will indicate successful contract establishment and will
+	// result in the beginning of service for the user
 	Start(ctx context.Context, in *Session, opts ...grpc.CallOption) (*SessionResp, error)
+	// update should be continuously called for every ongoing service session to update
+	// the user bandwidth usage as well as current quality of provided service.
+	// If update returns error the session should be terminated and the user disconnected,
+	// In the case of unsuccessful update completion, service provider is spouse to follow up
+	// with final stop call
 	Update(ctx context.Context, in *UpdateReq, opts ...grpc.CallOption) (*SessionResp, error)
+	// stop is a notification call to communicate to identity provider
+	// user/network  initiated service termination.
+	// stop will provide final used bandwidth count. stop call is issued
+	// after the user session was terminated.
 	Stop(ctx context.Context, in *UpdateReq, opts ...grpc.CallOption) (*StopResp, error)
 }
 
@@ -62,8 +76,22 @@ func (c *accountingClient) Stop(ctx context.Context, in *UpdateReq, opts ...grpc
 // All implementations must embed UnimplementedAccountingServer
 // for forward compatibility
 type AccountingServer interface {
+	// start will be called at the end of every new user session creation
+	// start is responsible for verification & initiation of a smart contract
+	// between the user identity provider/MNO and service provider (ISP/WISP/PLTE)
+	// A non-error return will indicate successful contract establishment and will
+	// result in the beginning of service for the user
 	Start(context.Context, *Session) (*SessionResp, error)
+	// update should be continuously called for every ongoing service session to update
+	// the user bandwidth usage as well as current quality of provided service.
+	// If update returns error the session should be terminated and the user disconnected,
+	// In the case of unsuccessful update completion, service provider is spouse to follow up
+	// with final stop call
 	Update(context.Context, *UpdateReq) (*SessionResp, error)
+	// stop is a notification call to communicate to identity provider
+	// user/network  initiated service termination.
+	// stop will provide final used bandwidth count. stop call is issued
+	// after the user session was terminated.
 	Stop(context.Context, *UpdateReq) (*StopResp, error)
 	mustEmbedUnimplementedAccountingServer()
 }
