@@ -57,12 +57,16 @@ message session {
         bytes  hardware_addr = 3;
         string name = 4;
     }
+    // ID of the user network (MNO, Identity Provider, etc.)
+    string user_network_id = 5;
     // unique session ID
-    string session_id = 5;
+    string session_id = 6;
     // ID of the service provider network
-    string serving_network_id = 6;
+    string serving_network_id = 7;
+    // ID of the service provider gateway (AP, AGW, enodeb, etc.)
+    string serving_gateway_id = 8;
     // available QoS at the caller's site
-    QoS    available_qos = 7;
+    QoS    available_qos = 9;
 }
 
 // start session response
